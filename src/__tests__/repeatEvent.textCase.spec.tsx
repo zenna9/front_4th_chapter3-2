@@ -206,7 +206,16 @@ describe('(필수) 반복 유형 선택', () => {
     expect(eventList.getByText('반복: 5년마다')).toBeInTheDocument();
   });
 
-  it('윤년(2/29) 반복일정 설정 시 4년에 한번 반복하도록 저장된다.', async () => {});
+  it('윤년(2/29) 반복일정 설정 시 4년에 한번 반복하도록 저장된다.', async () => {
+    setupMockHandlerCreation();
+    const { user } = setup(<App />);
+
+    const changedEvent: EventForm = { ...newEvent, repeat: { type: 'yearly', interval: 1 } };
+    await saveSchedule(user, changedEvent);
+    const eventList = within(screen.getByTestId('event-list'));
+
+    expect(eventList.getByText('반복: 1년마다')).toBeInTheDocument();
+  });
   it("1월 31일부터 '매월 31일' 반복 저장/ 종료일 5월 31일인 경우 31일이 있는 월인 1월, 3월, 5월만 저장된다.", async () => {});
   it("(필수아님)매월 '월말' 반복 저장 시 윤년의 29일에 저장된다.", async () => {});
   it("(필수아님)매월 '월말' 반복 저장 시 일반적 2월의 28일에 저장된다.", async () => {});
