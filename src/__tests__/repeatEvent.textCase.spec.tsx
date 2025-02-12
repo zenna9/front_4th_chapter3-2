@@ -206,6 +206,9 @@ describe('(필수) 반복 유형 선택', () => {
     expect(eventList.getByText('반복: 5년마다')).toBeInTheDocument();
   });
 
+  it('(필수아님) 반복일정을 선택할 수 있따..!', async () => {
+    setupMockHandlerCreation();
+  });
   it('윤년(2/29) 반복일정 설정 시 4년에 한번 반복하도록 저장된다.', async () => {
     setupMockHandlerCreation();
     const { user } = setup(<App />);
