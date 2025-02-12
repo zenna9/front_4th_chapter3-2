@@ -6,6 +6,7 @@ import { ReactElement } from 'react';
 
 import {
   setupMockHandlerCreation,
+  setupMockHandlerCreationList,
   setupMockHandlerDeletion,
   setupMockHandlerUpdating,
 } from '../__mocks__/handlersUtils';
@@ -27,7 +28,7 @@ const newEvent: EventForm = {
   description: '프로젝트 진행 상황 논의',
   location: '회의실 A',
   category: '업무',
-  repeat: { type: 'daily', interval: 3 },
+  repeat: { type: 'daily', interval: 1, endDate: '2024-10-18' },
   notificationTime: 1,
 };
 
@@ -40,7 +41,7 @@ const saveSchedule = async (user: UserEvent, form: Omit<Event, 'id' | 'notificat
     location,
     description,
     category,
-    repeat: { type: repeatType, interval: repeatInterval },
+    repeat: { type: repeatType, interval: repeatInterval, endDate: endDate },
   } = form;
 
   await user.click(screen.getAllByText('일정 추가')[0]);
@@ -62,6 +63,7 @@ const saveSchedule = async (user: UserEvent, form: Omit<Event, 'id' | 'notificat
   await user.selectOptions(screen.getByLabelText('반복 유형'), repeatType);
   await user.clear(screen.getByLabelText('반복 간격')); //초기화를 안하니까 13이됨
   await user.type(screen.getByLabelText('반복 간격'), `${repeatInterval}`);
+  await user.type(screen.getByLabelText('반복 종료일'), endDate ?? '');
 
   await user.click(screen.getByTestId('event-submit-button'));
 };
@@ -206,9 +208,17 @@ describe('(필수) 반복 유형 선택', () => {
     expect(eventList.getByText('반복: 5년마다')).toBeInTheDocument();
   });
 
-  it('(필수아님) 반복일정을 선택할 수 있따..!', async () => {
-    setupMockHandlerCreation();
+  it('9900(필수아님) 반복일정을 저장할 수 있따..!', async () => {
+    const { user } = setup(<App />);
+    setupMockHandlerCreationList();
+
+    await saveSchedule(user, newEvent);
+    const eventList = within(screen.getByTestId('event-list'));
+    expect(eventList.getByText('2024-10-15')).toBeInTheDocument();
+    expect(eventList.getByText('2024-10-16')).toBeInTheDocument();
+    expect(eventList.getByText('2024-10-17')).toBeInTheDocument();
   });
+
   it('윤년(2/29) 반복일정 설정 시 4년에 한번 반복하도록 저장된다.', async () => {
     setupMockHandlerCreation();
     const { user } = setup(<App />);
