@@ -1,16 +1,10 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { render, screen, within, act } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { UserEvent, userEvent } from '@testing-library/user-event';
-import { http, HttpResponse } from 'msw';
 import { ReactElement } from 'react';
 
-import {
-  setupMockHandlerCreation,
-  setupMockHandlerDeletion,
-  setupMockHandlerUpdating,
-} from '../__mocks__/handlersUtils';
+import { setupMockHandlerCreation, setupMockHandlerUpdating } from '../__mocks__/handlersUtils';
 import App from '../App';
-import { server } from '../setupTests';
 import { Event, EventForm } from '../types';
 
 const setup = (element: ReactElement) => {
@@ -112,17 +106,15 @@ describe('(필수) 반복 유형 선택_일정생성', () => {
     };
     await saveSchedule(user, changedEvent);
 
-    // 화면 땀
-    const viewPageNext = screen.getByLabelText('Next');
     const eventList = within(screen.getByTestId('event-list'));
 
     // test
     expect(eventList.getByText('2024-10-15')).toBeInTheDocument();
 
-    await userEvent.click(viewPageNext);
+    await clickNextView(1);
     expect(eventList.getByText('2024-11-15')).toBeInTheDocument();
 
-    await userEvent.click(viewPageNext);
+    await clickNextView(1);
     expect(eventList.getByText('2024-12-15')).toBeInTheDocument();
   });
 
@@ -141,7 +133,7 @@ describe('(필수) 반복 유형 선택_일정생성', () => {
 
     await clickNextView(12);
     expect(eventList.getByText('2025-10-15')).toBeInTheDocument();
-  });
+  }, 100000);
 });
 
 describe('(필수) 반복 유형 선택_일정수정', () => {

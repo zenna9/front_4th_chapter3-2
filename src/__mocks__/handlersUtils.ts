@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw';
 import { server } from '../setupTests';
 import { Event } from '../types';
 
-// ! Hard 여기 제공 안함
+//새 일정 추가
 export const setupMockHandlerCreation = (initEvents = [] as Event[]) => {
   const mockEvents: Event[] = [...initEvents];
 
@@ -16,10 +16,19 @@ export const setupMockHandlerCreation = (initEvents = [] as Event[]) => {
       newEvent.id = String(mockEvents.length + 1); // 간단한 ID 생성
       mockEvents.push(newEvent);
       return HttpResponse.json(newEvent, { status: 201 });
+    }),
+    http.post('/api/events-list', async ({ request }) => {
+      const newEvents = (await request.json()) as Event[];
+      newEvents.forEach((event) => {
+        event.id = String(mockEvents.length + 1); // 간단한 ID 생성
+        mockEvents.push(event);
+      });
+      return HttpResponse.json(newEvents, { status: 201 });
     })
   );
 };
 
+//일정 수정
 export const setupMockHandlerUpdating = () => {
   const mockEvents: Event[] = [
     {
@@ -63,6 +72,7 @@ export const setupMockHandlerUpdating = () => {
   );
 };
 
+//일정 삭제
 export const setupMockHandlerDeletion = () => {
   const mockEvents: Event[] = [
     {
