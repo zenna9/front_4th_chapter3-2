@@ -6,6 +6,7 @@ import {
   formatWeek,
   getDaysInMonth,
   getEventsForDay,
+  getRepeatDates,
   getWeekDates,
   getWeeksAtMonth,
   isDateInRange,
@@ -309,6 +310,7 @@ describe('추가) 반복일정 리턴 메서드 확인', () => {
       interval: 1,
       endDate: '2025-02-28',
     };
+    expect(getRepeatDates(periodSet, STARTDATE)).toEqual(['2025-02-03']);
   });
   it('종료일이 지정되지 않은 경우 시작일만 담은 배열을 반환한다', () => {
     periodSet = {
@@ -316,6 +318,9 @@ describe('추가) 반복일정 리턴 메서드 확인', () => {
       interval: 1,
       endDate: '',
     };
+    expect(getRepeatDates(periodSet, STARTDATE)).toEqual(['2025-02-03']);
+    periodSet.endDate = undefined;
+    expect(getRepeatDates(periodSet, STARTDATE)).toEqual(['2025-02-03']);
   });
   it("2025-02-03부터 '3일마다 한번'씩 일정을 설정하고 종료일을 2/9일로 설정하는 경우 2/3 2/6, 2/9일이 리턴된다.", () => {
     periodSet = {
@@ -323,6 +328,11 @@ describe('추가) 반복일정 리턴 메서드 확인', () => {
       interval: 3,
       endDate: '2025-02-11',
     };
+    expect(getRepeatDates(periodSet, STARTDATE)).toEqual([
+      '2025-02-03',
+      '2025-02-06',
+      '2025-02-09',
+    ]);
   });
   it("2025-02-03일부터 '3주마다 한번'씩 일정을 설정하고 종료일을 2025-03-31 로 설정하는 경우 2/24, 3/17일에도 저장된다.", () => {
     periodSet = {
@@ -330,6 +340,11 @@ describe('추가) 반복일정 리턴 메서드 확인', () => {
       interval: 3,
       endDate: '2025-03-31',
     };
+    expect(getRepeatDates(periodSet, STARTDATE)).toEqual([
+      '2025-02-03',
+      '2025-02-24',
+      '2025-03-17',
+    ]);
   });
   it("2025-02-03일부터 '2개월마다 한번'씩 일정을 설정하고 종료일을 2025-07-01 로 설정하는 경우 04/03, 06/03일에도 저장된다.", () => {
     periodSet = {
@@ -337,5 +352,44 @@ describe('추가) 반복일정 리턴 메서드 확인', () => {
       interval: 2,
       endDate: '2025-07-01',
     };
+    expect(getRepeatDates(periodSet, STARTDATE)).toEqual([
+      '2025-02-03',
+      '2025-04-03',
+      '2025-06-03',
+    ]);
+  });
+  it("'1개월마다 한번'씩 일정을 설정한 날이 월말인 경우 매 월의 월말이 리턴된다.", () => {
+    periodSet = {
+      type: 'monthly',
+      interval: 1,
+      endDate: '2026-01-01',
+    };
+    expect(getRepeatDates(periodSet, new Date('2025-01-31'))).toEqual([
+      '2025-01-31',
+      '2025-02-28',
+      '2025-03-31',
+      '2025-04-30',
+      '2025-05-31',
+      '2025-06-30',
+      '2025-07-31',
+      '2025-08-31',
+      '2025-09-30',
+      '2025-10-31',
+      '2025-11-30',
+      '2025-12-31',
+    ]);
+  });
+
+  it('윤년이 포함된 년도의 말일, monthly반복 시 2/28이 아닌 2/29에 저장된다', () => {
+    periodSet = {
+      type: 'monthly',
+      interval: 1,
+      endDate: '2024-04-01',
+    };
+    expect(getRepeatDates(periodSet, new Date('2024-01-31'))).toEqual([
+      '2024-01-31',
+      '2024-02-29',
+      '2024-03-31',
+    ]);
   });
 });

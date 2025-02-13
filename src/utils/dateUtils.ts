@@ -1,4 +1,4 @@
-import { Event } from '../types.ts';
+import { Event, RepeatInfo } from '../types.ts';
 
 /**
  * 주어진 년도와 월의 일수를 반환합니다.
@@ -107,4 +107,47 @@ export function formatDate(currentDate: Date, day?: number) {
     fillZero(currentDate.getMonth() + 1),
     fillZero(day ?? currentDate.getDate()),
   ].join('-');
+}
+
+// daily, weekly, monthly, yearly 반복일정 생성기
+export function getRepeatDates({ type, interval, endDate }: RepeatInfo, startDate: Date) {
+  const startDateString = startDate.toISOString().split('T')[0];
+  const repeatDates = [startDateString];
+
+  if (type === 'none' || !endDate) {
+    // 편의상 종료일 지정 없으면 그냥 시작일만 반환
+    return repeatDates;
+  }
+  let deadLine = new Date(endDate);
+  let nextDate = new Date(startDate);
+  let stillContinue = true;
+  const is월말 =
+    getDaysInMonth(nextDate.getFullYear(), startDate.getMonth() + 1) === startDate.getDate()
+      ? true
+      : false;
+
+  while (stillContinue) {
+    if (type === 'daily') {
+      nextDate.setDate(nextDate.getDate() + interval);
+    } else if (type === 'weekly') {
+      nextDate.setDate(nextDate.getDate() + interval * 7);
+    } else if (type === 'monthly') {
+      const 다음월 = nextDate.getMonth() + interval;
+      if (is월말) {
+        const 월말일자 = getDaysInMonth(nextDate.getFullYear(), 다음월 + 1);
+        nextDate.setMonth(다음월);
+        nextDate.setDate(월말일자);
+      }
+      nextDate.setMonth(다음월);
+    } else if (type === 'yearly') {
+      nextDate.setFullYear(nextDate.getFullYear() + interval);
+    }
+
+    if (nextDate <= deadLine) {
+      repeatDates.push(nextDate.toISOString().split('T')[0]);
+    } else {
+      stillContinue = false;
+    }
+  }
+  return repeatDates;
 }
